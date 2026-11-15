@@ -14,7 +14,6 @@ body[data-view="ankle"] .intro,body[data-view="detail"] .intro{opacity:0;transit
 }
 
 .panel{max-height:calc(100dvh - 110px);overflow-y:auto}
-.camera-angle{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:8px 0;border-top:1px solid #ffffff10;border-bottom:1px solid #ffffff10;color:#aeb7ab;font:10px monospace;text-align:center}.camera-angle span{display:flex;flex-direction:column;gap:4px}.camera-angle output{font-size:12px}
 .static-notice,.views,footer,.toggles,.damage-controls,#damageHint,.range-hint,.light-hint,#reset{display:none!important}
 @media(max-width:700px){
   label[for=reflection]{grid-column:1;grid-row:7}
@@ -41,3 +40,19 @@ body[data-model-mode="character"] .intro{display:none}
 .panel[data-model="character"] .static-notice{margin-bottom:18px}
 
 .damage-controls{margin-top:10px}.damage-controls + .range-hint{margin:8px 0 0}
+
+/* Mobile controls collapse to a slim right-edge handle. */
+.panel-toggle{display:none}
+@media(max-width:700px){
+  .panel{display:block;top:50%;bottom:auto;left:auto;right:12px;transform:translateY(-50%);width:min(310px,calc(100vw - 24px));max-height:calc(100dvh - 24px);padding:14px;overflow-y:auto;z-index:5}
+  .panel-top{display:flex;align-items:center;justify-content:flex-start;gap:12px;margin:0 0 14px}
+  .panel-toggle{display:block;min-width:32px;min-height:32px;border:1px solid #ffffff20;border-radius:6px;background:#293228;color:#e5ecde;font-size:10px}
+  .panel[data-collapsed="true"]{width:44px;min-height:156px;padding:7px;overflow:hidden}
+  .panel[data-collapsed="true"] .panel-top{height:100%;min-height:140px;justify-content:center;margin:0}
+  .panel[data-collapsed="true"] .panel-toggle{width:28px;height:142px;writing-mode:vertical-rl;letter-spacing:1px}
+  .panel[data-collapsed="true"] .panel-tabs,.panel[data-collapsed="true"] .serial,#panel[data-collapsed="true"] #panelContents{display:none!important}
+  .panel[data-collapsed="false"] .panel-top{border-bottom:1px solid #ffffff12;padding-bottom:10px}
+  .panel[data-collapsed="false"] .panel-tabs{gap:12px}
+  .panel[data-collapsed="false"] .panel-tabs button{font-size:11px}
+  .panel[data-collapsed="false"] #lightControls{max-height:min(60dvh,440px)}
+}
