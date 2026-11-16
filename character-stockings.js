@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {TEARS_PER_LEG,createTear,hasIntactFabric,grabStrain,accumulateRupture} from './fabric-tearing.js?v=20261115-round1';
 import { fittedRestState } from './stocking-fit.js?v=20261115-contact1';
 import { N, M, low, high, rows, createFabricState, deformFabric } from './fabric-surface.js?v=20261115-fit3';
 import { stretchResponse, reboundDamping } from './fabric-math.js?v=20261115-elasticity';
@@ -159,7 +160,7 @@ function createFittedStocking(body,side,parent,rest,restNormals,bodyToLocal){
   geometry.setAttribute('normal',new THREE.Float32BufferAttribute(new Float32Array((GRID_COUNT+1)*3),3).setUsage(THREE.DynamicDrawUsage));
   const uv=Array.from(fabric.geo.attributes.uv.array);uv.push(.5,0);
   geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
-  geometry.setAttribute('fabricDamage',new THREE.Float32BufferAttribute(new Float32Array((GRID_COUNT+1)*2).fill(10),2));
+  geometry.setAttribute('fabricSide',new THREE.Float32BufferAttribute(new Float32Array(GRID_COUNT+1).fill(side==='l'?0:1),1));
   const toeCoverage=new Float32Array(GRID_COUNT+1);
   for(let i=0;i<GRID_COUNT;i++)toeCoverage[i]=(1-THREE.MathUtils.smoothstep(fitRest[i*3+1],ankle.y-.015,ankle.y+.04))*THREE.MathUtils.smoothstep(fitRest[i*3+2]-ankle.z,.10,.22);
   geometry.setAttribute('fabricToe',new THREE.Float32BufferAttribute(toeCoverage,1));
@@ -172,7 +173,7 @@ function createFittedStocking(body,side,parent,rest,restNormals,bodyToLocal){
   mesh.bindMode=body.bindMode;mesh.bind(body.skeleton,body.bindMatrix);mesh.renderOrder=2;mesh.frustumCulled=false;
   body.parent.add(mesh);
   const shell={mesh,fabric,height,bottom,scale,fitRest,binding,inverseBind,smoothNormals,centers,radii,fittedRows,
-    ankleHeight:ankle.y,kneeHeight:knee.y,grabRestPoint:new THREE.Vector3(),grabRestNormal:new THREE.Vector3(),damageCenter:null,
+    ankleHeight:ankle.y,kneeHeight:knee.y,grabRestPoint:new THREE.Vector3(),grabRestNormal:new THREE.Vector3(),tears:[],rupture:{load:0,latched:false},
     goal:new THREE.Vector3(),displacement:new THREE.Vector3(),grabNormal:new THREE.Vector3(),pin:null,range:40,
     influence:fabric.influence,baseGeometryNormals:null,dirty:false};
   mesh.userData.stocking=shell;
@@ -262,11 +263,7 @@ function poseMap(s,body,target){
 
 // Ray picking matches the shader cutout so an empty hole cannot be grabbed.
 export function hasFabricAtUv(shell,uv){
-  if(!shell.damageCenter||!uv)return true;
-  const dx=uv.x-shell.damageCenter.x,x=(dx-Math.round(dx))/.045,y=(uv.y-shell.damageCenter.y)/.032;
-  const r=Math.hypot(x,y),ragged=.045*Math.sin(uv.x*1900)+.035*Math.sin(uv.y*2700);
-  const thread=(uv.y*1400)%1>=.94;
-  return r+ragged>=1||(r>=.84&&thread);
+  return hasIntactFabric(shell.tears,uv);
 }
 
 export function setStockingInfluence(shell,seed,range,uv=null){
@@ -301,7 +298,15 @@ export function createCharacterStockings(model,parent,material){
     }
   };
   const cancelFit=()=>{fitWorker?.terminate();fitWorker=null;finishFit?.(false);finishFit=null;};
-  const system={lastGrab:null,tightness:55,
+  const syncTears=()=>{
+    const uniforms=material.userData.tears;if(!uniforms)return;
+    shells.forEach((s,side)=>{for(let i=0;i<TEARS_PER_LEG;i++){
+      const tear=s.tears[i],slot=side*TEARS_PER_LEG+i;
+      uniforms.holes.value[slot].set(tear?.u??0,tear?.v??0,tear?.rx??0,tear?.ry??0);
+      uniforms.details.value[slot].set(tear?.phase??0,tear?.up??0,tear?.down??0,side);
+    }});
+  };
+  const system={lastGrab:null,tightness:55,tearingEnabled:true,tearStrength:55,
     setTightness(value){
       cancelFit();value=Math.max(0,Math.min(100,value));
       applyFit(value,shells.map(s=>fittedRestState(s,N,M,value)));
@@ -331,7 +336,7 @@ export function createCharacterStockings(model,parent,material){
     reset(){for(const s of shells){s.goal.set(0,0,0);s.displacement.set(0,0,0);s.fabric.goal.set(0,0,0);s.fabric.displacement.set(0,0,0);s.fabric.velocity.set(0,0,0);s.pin=null;s.dirty=true;}},
     isSettling(){return shells.some(s=>s.fabric.displacement.lengthSq()>1e-8||s.goal.lengthSq()>1e-8||s.fabric.velocity.lengthSq()>1e-7);},
     grab(hit,range){
-      const s=hit.object.userData.stocking;this.reset();
+      const s=hit.object.userData.stocking;this.reset();s.rupture={load:0,latched:false};
       const uv=hit.uv??new THREE.Vector2(.5,0);
       let row=0;const y=low+uv.y*(high-low);
       for(let j=1;j<=M;j++)if(Math.abs(rows[j]-y)<Math.abs(rows[row]-y))row=j;
@@ -349,19 +354,9 @@ export function createCharacterStockings(model,parent,material){
       origin.copy(s.grabRestPoint).applyMatrix4(map);
       outNormal.copy(s.grabRestNormal).applyMatrix3(new THREE.Matrix3().getNormalMatrix(map)).normalize();
     },
-    damageLastGrab(){
-      const {shell:s,uv}=this.lastGrab??{shell:shells[0],uv:new THREE.Vector2(.25,.42)};
-      // One recoverable hole per stocking; coordinates remain attached to the fabric.
-      s.damageCenter=uv.clone();const attr=s.mesh.geometry.attributes.fabricDamage,tex=s.mesh.geometry.attributes.uv;
-      for(let i=0;i<attr.count;i++){
-        const d=tex.getX(i)-uv.x,wrapped=d-Math.round(d);
-        attr.setXY(i,wrapped/.045,(tex.getY(i)-uv.y)/.032);
-      }
-      attr.needsUpdate=true;return true;
-    },
-    repair(){for(const s of shells){s.damageCenter=null;s.mesh.geometry.attributes.fabricDamage.array.fill(10);s.mesh.geometry.attributes.fabricDamage.needsUpdate=true;}},
+    repair(){for(const s of shells){s.tears.length=0;s.rupture={load:0,latched:false};}syncTears();},
     automaticPull(pull,range,elasticity=50){
-      const s=shells[0];if(s.pin===null){let row=0;for(let j=1;j<=M;j++)if(Math.abs(rows[j]-2.48)<Math.abs(rows[row]-2.48))row=j;setStockingInfluence(s,row*STRIDE+4,range,new THREE.Vector2(.25/(2*Math.PI),(2.48-low)/(high-low)));}
+      const s=shells[0];if(pull===0)s.rupture={load:0,latched:false};if(s.pin===null){let row=0;for(let j=1;j<=M;j++)if(Math.abs(rows[j]-2.48)<Math.abs(rows[row]-2.48))row=j;setStockingInfluence(s,row*STRIDE+4,range,new THREE.Vector2(.25/(2*Math.PI),(2.48-low)/(high-low)));}
       parent.updateMatrixWorld(true);
       deltaMatrix.setFromMatrix4(poseMap(s,body,map));
       const response=stretchResponse(elasticity);
@@ -369,6 +364,7 @@ export function createCharacterStockings(model,parent,material){
       return s;
     },
     update(dt,stiffness,damping=50){
+      const ruptured=[];
       parent.updateMatrixWorld(true);
       for(const s of shells){
         s.mesh.boundingSphere=null;s.mesh.boundingBox=null;
@@ -384,7 +380,15 @@ export function createCharacterStockings(model,parent,material){
         if(s.goal.lengthSq()===0&&s.fabric.displacement.lengthSq()<1e-8&&s.fabric.velocity.lengthSq()<1e-7){s.fabric.displacement.set(0,0,0);s.fabric.velocity.set(0,0,0);deformFabric(s.fabric,0,stiffness,s.range);}
         s.displacement.copy(s.fabric.displacement).multiplyScalar(s.scale).applyMatrix3(deltaMatrix);
         writeFittedGeometry(s);
+        if(this.tearingEnabled&&s.pin!==null&&s.goal.lengthSq()>1e-8&&s.tears.length<TEARS_PER_LEG){
+          const strain=grabStrain(s,N,M),uv=new THREE.Vector2(s.fabric.pinAngle/(Math.PI*2),(s.fabric.pinY-low)/(high-low));
+          if(uv.y>.04&&uv.y<.94&&hasIntactFabric(s.tears,uv)&&accumulateRupture(s.rupture,strain,this.tearStrength,dt)){
+            s.tears.push(createTear(uv,strain));syncTears();
+            s.goal.set(0,0,0);s.fabric.goal.set(0,0,0);s.fabric.velocity.multiplyScalar(.25);ruptured.push(s);
+          }
+        }else if(s.goal.lengthSq()===0)s.rupture.load=0;
       }
+      return ruptured;
     }
   };
   system.setTightness(55);system.update(0,55);

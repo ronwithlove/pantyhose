@@ -1,12 +1,13 @@
 import * as THREE from 'three';
-import { t, localizeStaticUi } from './localization.js?v=20261115-locales-mobile';
+import {bindTearAppearance} from './tear-appearance.js?v=20261115-defaults2';
+import { t, localizeStaticUi } from './localization.js?v=20261115-round1';
 import { setupLighting } from './lighting-controls.js';
-import { createNylonMaterial, createStudioEnvironment } from './fabric-material.js?v=20261114-drape2';
+import { createNylonMaterial, createStudioEnvironment } from './fabric-material.js?v=20261115-defaults2';
 import { low, high } from './fabric-surface.js?v=20261115-contact1';
 import { stretchResponse } from './fabric-math.js?v=20261115-contact1';
 import { OrbitControls } from './vendor/OrbitControls.js';
 import { loadNudeCharacter } from './model-view.js';
-import { createCharacterStockings, setStockingInfluence } from './character-stockings.js?v=20261115-contact1';
+import { createCharacterStockings, setStockingInfluence } from './character-stockings.js?v=20261115-round1';
 
 const $ = id => document.getElementById(id);
 localizeStaticUi();
@@ -38,6 +39,7 @@ const podiumHeight=.06;const podium=new THREE.Mesh(new THREE.CylinderGeometry(1.
 const ring=new THREE.Mesh(new THREE.TorusGeometry(1.33,.002,6,160),new THREE.MeshBasicMaterial({color:0x62705e}));ring.rotation.x=-Math.PI/2;ring.position.y=.048;scene.add(ring);
 
 const clothMat=createNylonMaterial(renderer);
+bindTearAppearance(document,clothMat.userData.tearAppearance,t);
 const environment=createStudioEnvironment(renderer);
 clothMat.envMap=environment.texture;clothMat.envMapIntensity=.85;
 let automatic=false,wire=false,drag=null,time=0,stiffness=55,elasticity=50,damping=50,lastTime=performance.now(),view='full',influenceRange=40,characterLoaded=false,viewAzimuth=0,viewPolar=0,viewDistance=0;
@@ -61,7 +63,7 @@ function pickFabricMeshes(){
 canvas.addEventListener('pointerdown',e=>{
   if(document.body.dataset.editLights==='true'||e.button!==0||drag)return;
   const meshes=pickFabricMeshes();if(!meshes.length)return;
-  screenRay(e);const h=raycaster.intersectObjects(meshes).find(h=>characterStockings.isIntactAt(h));if(!h)return;
+  screenRay(e);const h=raycaster.intersectObjects(meshes)[0];if(!h||!characterStockings.isIntactAt(h))return;
   setAuto(false);
   const l=characterStockings.grab(h,influenceRange);
   drag={leg:l,normal:l.grabNormal.clone(),origin:h.point.clone(),target:h.point.clone(),pointerId:e.pointerId};
@@ -82,7 +84,8 @@ canvas.addEventListener('pointermove',e=>{
     }
     return;
   }
-  canvas.style.cursor=raycaster.intersectObjects(meshes).some(h=>characterStockings.isIntactAt(h))?'grab':'default';
+  const nearest=raycaster.intersectObjects(meshes)[0];
+  canvas.style.cursor=nearest&&characterStockings.isIntactAt(nearest)?'grab':'default';
 });
 function release(e){
   if(!drag||e.pointerId!==drag.pointerId)return;
@@ -171,7 +174,14 @@ $('stockingsToggle').onclick=()=>{
 };
 document.body.dataset.modelMode='character';$('panel').dataset.model='character';syncIdleUi();
 document.querySelectorAll('.views button[data-view]').forEach(el=>el.onclick=()=>frameView(el.dataset.view));
-$('damage').onclick=()=>{if(characterStockings?.damageLastGrab()){$('damageHint').textContent=t('damageDone');}};
+$('damage').onclick=()=>{
+  if(!characterStockings)return;
+  characterStockings.tearingEnabled=!characterStockings.tearingEnabled;
+  characterStockings.shells.forEach(s=>s.rupture.load=0);
+  $('damage').setAttribute('aria-pressed',String(characterStockings.tearingEnabled));
+  $('damage').classList.toggle('active',characterStockings.tearingEnabled);
+};
+$('tearStrength').oninput=e=>{if(characterStockings)characterStockings.tearStrength=Number(e.target.value);$('tearStrengthValue').value=e.target.value+'%';};
 $('repair').onclick=()=>{characterStockings?.repair();$('damageHint').textContent=t('damageHintText');};
 $('reset').onclick=()=>{cancelFabricDrag();characterStockings?.reset();$('repair').onclick();controls.enabled=true;time=0;frameView('ankle');setAuto(false);};
 const panel=$('panel'),panelToggle=$('panelToggle');
@@ -201,7 +211,11 @@ function animate(now){
   }
   maxDisplacement=0;
   if(characterStockings&&stockingsEnabled){
-    characterStockings.update(dt,stiffness,damping);
+    const ruptured=characterStockings.update(dt,stiffness,damping);
+    if(ruptured.length){
+      if(drag&&ruptured.includes(drag.leg))cancelFabricDrag();
+      setAuto(false);canvas.style.cursor='default';$('damageHint').textContent=t('damageDone');
+    }
     maxDisplacement=Math.max(...characterStockings.shells.map(l=>l.displacement.length()));
   }
   controls.update();renderer.render(scene,camera);frames++;
@@ -210,7 +224,7 @@ function animate(now){
     canvas.dataset.influenceRange=String(influenceRange);
     canvas.dataset.elasticity=String(elasticity);canvas.dataset.damping=String(damping);
     canvas.dataset.animationTime=(characterIdleMixer?.time??0).toFixed(3);canvas.dataset.dragging=String(Boolean(drag));
-    canvas.dataset.damage=String(characterStockings?.shells.filter(s=>s.damageCenter).length??0);
+    canvas.dataset.damage=String(characterStockings?.shells.reduce((n,s)=>n+s.tears.length,0)??0);
     const geometries=characterStockings?.meshes.map(m=>m.geometry)??[];
     canvas.dataset.finite=String(geometries.every(g=>g.attributes.position.array.every(Number.isFinite)));
     canvas.dataset.displacement=maxDisplacement.toFixed(5);canvas.dataset.stockings=String(Boolean(characterStockings&&stockingsEnabled));
