@@ -11,6 +11,12 @@ import { createCharacterStockings, setStockingInfluence } from './character-stoc
 
 const $ = id => document.getElementById(id);
 localizeStaticUi();
+const backgroundAudio=$('backgroundAudio'),musicToggle=$('musicToggle');
+backgroundAudio.volume=.28;
+function syncMusicControl(){const playing=!backgroundAudio.paused;const label=t(playing?'musicPause':'musicPlay');musicToggle.setAttribute('aria-pressed',String(playing));musicToggle.setAttribute('aria-label',label);musicToggle.title=label;}
+musicToggle.onclick=async()=>{if(backgroundAudio.paused){try{await backgroundAudio.play();}catch(error){console.info('Background music playback was blocked until another user gesture.',error);}}else backgroundAudio.pause();syncMusicControl();};
+backgroundAudio.addEventListener('play',syncMusicControl);backgroundAudio.addEventListener('pause',syncMusicControl);
+backgroundAudio.play().catch(()=>syncMusicControl());
 const canvas = $('scene');
 let renderer;
 try { renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:false }); }
