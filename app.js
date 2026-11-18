@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import {bindTearAppearance} from './tear-appearance.js?v=20261115-defaults2';
 import { t, localizeStaticUi } from './localization.js?v=20261115-round1';
 import { setupLighting } from './lighting-controls.js';
+import { setupGroundShadows } from './ground-shadow.js';
 import { createNylonMaterial, createStudioEnvironment } from './fabric-material.js?v=20261115-defaults2';
 import { low, high } from './fabric-surface.js?v=20261115-contact1';
 import { stretchResponse } from './fabric-math.js?v=20261115-contact1';
@@ -11,12 +12,40 @@ import { createCharacterStockings, setStockingInfluence } from './character-stoc
 
 const $ = id => document.getElementById(id);
 localizeStaticUi();
-const backgroundAudio=$('backgroundAudio'),musicToggle=$('musicToggle');
-backgroundAudio.volume=.28;
-function syncMusicControl(){const playing=!backgroundAudio.paused;const label=t(playing?'musicPause':'musicPlay');musicToggle.setAttribute('aria-pressed',String(playing));musicToggle.setAttribute('aria-label',label);musicToggle.title=label;}
-musicToggle.onclick=async()=>{if(backgroundAudio.paused){try{await backgroundAudio.play();}catch(error){console.info('Background music playback was blocked until another user gesture.',error);}}else backgroundAudio.pause();syncMusicControl();};
-backgroundAudio.addEventListener('play',syncMusicControl);backgroundAudio.addEventListener('pause',syncMusicControl);
-backgroundAudio.play().catch(()=>syncMusicControl());
+const backgroundAudio = $('backgroundAudio');
+const musicToggle = $('musicToggle');
+backgroundAudio.volume = .28;
+
+function syncMusicControl() {
+  const playing = !backgroundAudio.paused;
+  const label = t(playing ? 'musicPause' : 'musicPlay');
+  musicToggle.setAttribute('aria-pressed', String(playing));
+  musicToggle.setAttribute('aria-label', label);
+  musicToggle.title = label;
+}
+
+function stopPageClickPlayback() {
+  document.removeEventListener('click', playMusicOnPageClick, true);
+}
+
+function playBackgroundMusic() {
+  backgroundAudio.play().then(stopPageClickPlayback, syncMusicControl);
+}
+
+function playMusicOnPageClick(event) {
+  if (!event.isTrusted || musicToggle.contains(event.target) || !backgroundAudio.paused) return;
+  playBackgroundMusic();
+}
+
+musicToggle.addEventListener('click', () => {
+  stopPageClickPlayback();
+  if (backgroundAudio.paused) playBackgroundMusic();
+  else backgroundAudio.pause();
+});
+backgroundAudio.addEventListener('play', syncMusicControl);
+backgroundAudio.addEventListener('pause', syncMusicControl);
+document.addEventListener('click', playMusicOnPageClick, true);
+playBackgroundMusic();
 const canvas = $('scene');
 let renderer;
 try { renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:false }); }
@@ -42,6 +71,7 @@ function light(color,power,x,y,z,size){const l=new THREE.DirectionalLight(color,
 const studioLights=[light(0xffe6d7,2.6,-3,5,4,true),light(0xd4e3f5,1.6,3,3,-2),light(0xf6f4df,.6,1,1,4)];
 const floor=new THREE.Mesh(new THREE.PlaneGeometry(200,200),new THREE.MeshStandardMaterial({color:0x202925,roughness:.93}));floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;scene.add(floor);
 const podiumHeight=.06;const podium=new THREE.Mesh(new THREE.CylinderGeometry(1.35,1.38,podiumHeight,100),new THREE.MeshStandardMaterial({color:0x303a33,roughness:.8}));podium.position.y=.015;const podiumTop=podium.position.y+podiumHeight/2;podium.receiveShadow=true;scene.add(podium);
+setupGroundShadows(studioLights[0], [floor, podium]);
 const ring=new THREE.Mesh(new THREE.TorusGeometry(1.33,.002,6,160),new THREE.MeshBasicMaterial({color:0x62705e}));ring.rotation.x=-Math.PI/2;ring.position.y=.048;scene.add(ring);
 
 const clothMat=createNylonMaterial(renderer);
