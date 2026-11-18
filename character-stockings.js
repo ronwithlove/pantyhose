@@ -275,7 +275,7 @@ export function setStockingInfluence(shell,seed,range,uv=null){
 
 export function createCharacterStockings(model,parent,material){
   const body=model.getObjectByName('SK_AKANE_BODY_FULL');
-  if(!body?.isSkinnedMesh)throw new Error('A complete skinned body is required.');
+  if(!body?.isSkinnedMesh)throw new Error('The skinned Akane lower body is required.');
   parent.updateMatrixWorld(true);
   const bodyToLocal=new THREE.Matrix4().copy(parent.matrixWorld).invert().multiply(body.matrixWorld);
   const rest=[],restNormals=[],sourceNormal=body.geometry.attributes.normal,sourcePosition=body.geometry.attributes.position;

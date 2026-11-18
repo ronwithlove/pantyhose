@@ -1,10 +1,8 @@
 import * as THREE from 'three';
 
-// Fitted, opaque garments in the character's initial 3.35-unit pose.
+// Fitted opaque briefs in the original character coordinate system.
 // The mask is evaluated BEFORE skinning, so its cut lines travel with the body.
 const CUT = {
-  top: 2.64,
-  underBust: 2.31,
   // Lower the waistband and raise the front gusset to match the supplied guide.
   waist: 1.96,
   crotch: 1.78,
@@ -15,10 +13,7 @@ export function createCharacterUnderwear(model) {
   if(!body?.isSkinnedMesh)throw new Error('Underwear requires the skinned Akane body.');
   model.updateMatrixWorld(true);
   const positions=body.geometry.attributes.position;
-  const weights=body.geometry.attributes.skinWeight;
-  const boneIndices=body.geometry.attributes.skinIndex;
   const rest=new Float32Array(positions.count*3);
-  const isArm=new Uint8Array(positions.count);
   const point=new THREE.Vector3();
   const pelvis=body.skeleton.bones.find(b=>b.name==='pelvis');
   if(!pelvis)throw new Error('Underwear requires a pelvis bone.');
@@ -29,24 +24,16 @@ export function createCharacterUnderwear(model) {
     body.getVertexPosition(i,point).applyMatrix4(body.matrixWorld);
     point.x-=pelvisPosition.x;point.y-=rootY;point.z-=pelvisPosition.z;
     point.toArray(rest,i*3);
-    let armWeight=0;
-    for(let k=0;k<4;k++){
-      const name=body.skeleton.bones[boneIndices.getComponent(i,k)].name;
-      if(/^(upperarm|lowerarm|hand|thumb|index|middle|ring|pinky)/.test(name))armWeight+=weights.getComponent(i,k);
-    }
-    isArm[i]=armWeight>.25?1:0;
   }
-  // Keep only torso/pelvis triangles near the cuts. Fragment clipping gives
-  // smooth hems independent of the body's existing triangulation.
+  // Keep pelvic triangles near the cuts. Fragment clipping gives smooth hems.
   const sourceIndex=body.geometry.index,sourceCount=sourceIndex?sourceIndex.count:positions.count;
   const selected=[];
   for(let i=0;i<sourceCount;i+=3){
     const ids=[0,1,2].map(k=>sourceIndex?sourceIndex.getX(i+k):i+k);
-    if(ids.some(id=>isArm[id]))continue;
     const ys=ids.map(id=>rest[id*3+1]),low=Math.min(...ys),high=Math.max(...ys);
-    if((high>=CUT.underBust&&low<=CUT.top)||(high>=CUT.crotch&&low<=CUT.waist+.05))selected.push(...ids);
+    if(high>=CUT.crotch&&low<=CUT.waist+.05)selected.push(...ids);
   }
-  if(!selected.length)throw new Error('No torso surface found for underwear.');
+  if(!selected.length)throw new Error('No pelvic surface found for the briefs.');
   const geometry=new THREE.BufferGeometry(),remap=new Map(),sourceIds=[];
   geometry.setIndex(selected.map(id=>{
     if(!remap.has(id)){remap.set(id,sourceIds.length);sourceIds.push(id);}
@@ -59,9 +46,17 @@ export function createCharacterUnderwear(model) {
     geometry.setAttribute(name,new THREE.BufferAttribute(new ArrayType(values),attribute.itemSize,attribute.normalized));
   }
   geometry.setAttribute('garmentRest',new THREE.Float32BufferAttribute(sourceIds.flatMap(id=>Array.from(rest.subarray(id*3,id*3+3))),3));
-  const gap=.0035/body.matrixWorld.getMaxScaleOnAxis();
+  const restPosition=new THREE.Vector3(),direction=new THREE.Vector3(),offsetPosition=new THREE.Vector3();
   for(let i=0;i<sourceIds.length;i++){
-    point.fromBufferAttribute(geometry.attributes.position,i).addScaledVector(new THREE.Vector3().fromBufferAttribute(geometry.attributes.normal,i),gap);
+    const sourceId=sourceIds[i];
+    point.fromBufferAttribute(geometry.attributes.position,i);
+    direction.fromBufferAttribute(geometry.attributes.normal,i).normalize();
+    // The glTF mesh transform can differ from its skinned geometry's unit scale.
+    body.getVertexPosition(sourceId,restPosition).applyMatrix4(body.matrixWorld);
+    offsetPosition.copy(point).add(direction);
+    body.applyBoneTransform(sourceId,offsetPosition).applyMatrix4(body.matrixWorld);
+    const skinScale=offsetPosition.distanceTo(restPosition);
+    if(skinScale>0)point.addScaledVector(direction,.0035/skinScale);
     geometry.attributes.position.setXYZ(i,point.x,point.y,point.z);
   }
   const material=new THREE.MeshStandardMaterial({
@@ -80,16 +75,15 @@ export function createCharacterUnderwear(model) {
     `).replace('#include <clipping_planes_fragment>',`#include <clipping_planes_fragment>
       float x=abs(vGarmentRest.x);
       float y=vGarmentRest.y;
-      bool bandeau=y>=${CUT.underBust.toFixed(3)}&&y<=${CUT.top.toFixed(3)};
       // Full rear coverage, higher leg openings on the front, continuous side band.
       float front=smoothstep(-0.08,0.10,vGarmentRest.z);
       float legOpening=${CUT.crotch.toFixed(3)}+mix(0.50,0.62,front)*x;
       float waistband=${CUT.waist.toFixed(3)}+0.04*clamp(x/0.35,0.0,1.0);
       bool briefs=y>=legOpening&&y<=waistband;
-      if(!bandeau&&!briefs)discard;
+      if(!briefs)discard;
     `);
   };
-  material.customProgramCacheKey=()=> 'akane-black-underwear-v1';
+  material.customProgramCacheKey=()=> 'akane-black-briefs';
   const mesh=new THREE.SkinnedMesh(geometry,material);
   mesh.name='Akane_black_underwear';
   mesh.position.copy(body.position);mesh.quaternion.copy(body.quaternion);mesh.scale.copy(body.scale);

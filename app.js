@@ -6,8 +6,8 @@ import { createNylonMaterial, createStudioEnvironment } from './fabric-material.
 import { low, high } from './fabric-surface.js?v=20261115-contact1';
 import { stretchResponse } from './fabric-math.js?v=20261115-contact1';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { loadNudeCharacter } from './model-view.js';
-import { createCharacterStockings, setStockingInfluence } from './character-stockings.js?v=20261115-round1';
+import { loadAkaneCharacter } from './model-view.js?v=20261117-lower-body';
+import { createCharacterStockings, setStockingInfluence } from './character-stockings.js?v=20261117-lower-body';
 
 const $ = id => document.getElementById(id);
 localizeStaticUi();
@@ -30,7 +30,7 @@ renderer.shadowMap.enabled=true;
 renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const scene=new THREE.Scene();
 scene.fog=new THREE.FogExp2(0x101414,.065);
-const characterGroup=new THREE.Group();characterGroup.name='SK_ShinobiGirl_Nude animated model';characterGroup.visible=false;scene.add(characterGroup);
+const characterGroup=new THREE.Group();characterGroup.name='Akane animated lower body';characterGroup.visible=false;scene.add(characterGroup);
 let characterIdleMixer=null,characterIdleAction=null,characterIdlePlaying=true;
 let characterStockings=null,stockingsEnabled=true;
 const camera=new THREE.PerspectiveCamera(36,1,.05,50);
@@ -237,7 +237,7 @@ function animate(now){
     frames=0;frameStart=now;
   }
 }
-loadNudeCharacter().then(({model,idleClip,dimensions})=>{
+loadAkaneCharacter().then(({model,idleClip,dimensions})=>{
   characterGroup.add(model);characterGroup.position.y=podiumTop;
   characterStockings=createCharacterStockings(model,characterGroup,clothMat);
   characterLoaded=true;
