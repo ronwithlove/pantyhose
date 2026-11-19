@@ -14,14 +14,14 @@ export function setTearAppearance(uniforms,key,value){
 export function serializeTearAppearance(uniforms){
   return JSON.stringify(Object.fromEntries(Object.keys(tearAppearanceDefaults).map(key=>[key,Math.round(uniforms[key].value*100)])),null,2);
 }
-export function bindTearAppearance(document,uniforms,t){
+export function bindTearAppearance(document,uniforms,setLocalizedText){
   const container=document.getElementById('tearAppearanceControls'),fields=new Map();
   const values=document.getElementById('tearAppearanceValues');
   const sync=()=>{for(const [key,{input,output}]of fields){input.value=String(Math.round(uniforms[key].value*100));output.value=input.value+'%';}values.value=serializeTearAppearance(uniforms);};
   for(const key of Object.keys(tearAppearanceDefaults)){
     const label=document.createElement('label'),output=document.createElement('output'),input=document.createElement('input');
     input.id='tear-'+key;input.type='range';input.min='0';input.max='100';input.step='1';
-    label.htmlFor=input.id;label.append(t(key),output);
+    label.htmlFor=input.id;label.append(output);setLocalizedText(label,key);
     input.oninput=()=>{setTearAppearance(uniforms,key,input.value);sync();};
     container.append(label,input);fields.set(key,{input,output});
   }

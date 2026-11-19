@@ -1,7 +1,8 @@
 const messages = {
   zh: {
     tearAppearanceTitle: '洞边与抽丝调节', resetTearAppearance: '恢复这组默认值', tearAppearanceValues: '参数记录（选中复制发给我）', rimDarkness: '洞边深浅', rimWidth: '洞边宽度', rimRelief: '洞边凹凸', warpStrength: '纵丝强度', weftStrength: '横丝强度', warpDensity: '纵丝密度', weftDensity: '横丝密度', yarnThickness: '纱线粗细', yarnBend: '纱线弯曲', yarnGloss: '纱线反光',
-    pageTitle: '织物实验室 · Fabric study', stageLabel: '可拖拽的三维弹性织物', brand: 'MATTER<span> / </span>织物实验室', live: 'THREE.JS 实时渲染', heroTitle: '丝袜，<br>随形而动。', heroDescription: '贴合腿脚，跟随动作。<br>拖拽感受局部张力与回弹。',
+    languageLabel: '界面语言', languageAuto: '自动', footerHelp: '左键拖拽丝袜 · 按住右键旋转 · 使用按钮切换视角',
+    stageLabel: '可拖拽的三维弹性织物', live: 'THREE.JS 实时渲染', heroTitle: '丝袜，<br>随形而动。', heroDescription: '贴合腿脚，跟随动作。<br>拖拽感受局部张力与回弹。',
     fabricTab: '织物', lightsTab: '灯光', panelOpen: '展开控制面板', panelClose: '收起控制面板', musicPlay: '播放背景音乐', musicPause: '暂停背景音乐',
     idleLoading: 'Idle 动画加载中', idleUnavailable: '无 Idle 动画', idlePause: '暂停 Idle 动画', idlePlay: '播放 Idle 动画', stockingsHide: '隐藏丝袜 · 裸腿对照', stockingsShow: '显示丝袜',
     opacity: '织物密度', tightness: '贴身紧度', tightnessHint: '0% 宽松 → 100% 贴身；膝踝余量堆褶，调高后收紧', elasticity: '延展弹性', elasticityHint: '低：紧实、拉不远；高：柔软、可拉更远', stiffness: '回弹速度', damping: '回弹阻尼', dampingHint: '低：弹跳、余振多；高：回位平稳、余振少', influence: '拉伸影响范围', influenceHint: '小范围更贴腿，大范围带动更多织物', reflection: '反光强度', reflectionTitle: '100% 为原效果；0% 关闭织物高光', sparkle: '纤维闪点', sparkleTitle: '降低后反光更均匀；100% 为原纤维闪点',
@@ -12,7 +13,8 @@ const messages = {
   },
   en: {
     tearAppearanceTitle: 'Tear edges and yarns', resetTearAppearance: 'Reset these values', tearAppearanceValues: 'Settings (select and copy to share)', rimDarkness: 'Edge darkness', rimWidth: 'Edge width', rimRelief: 'Edge relief', warpStrength: 'Vertical yarn strength', weftStrength: 'Cross yarn strength', warpDensity: 'Vertical yarn density', weftDensity: 'Cross yarn density', yarnThickness: 'Yarn thickness', yarnBend: 'Yarn curvature', yarnGloss: 'Yarn sheen',
-    pageTitle: 'Fabric Study · MATTER', stageLabel: 'Interactive 3D elastic fabric', brand: 'MATTER<span> / </span>Fabric Study', live: 'THREE.JS REALTIME', heroTitle: 'Nylon,<br>in motion.', heroDescription: 'Fitted to the legs and moving with them.<br>Drag to feel local tension and rebound.',
+    languageLabel: 'Interface language', languageAuto: 'Auto', footerHelp: 'Left-drag to stretch · right-drag to rotate · use buttons to change view',
+    stageLabel: 'Interactive 3D elastic fabric', live: 'THREE.JS REALTIME', heroTitle: 'Nylon,<br>in motion.', heroDescription: 'Fitted to the legs and moving with them.<br>Drag to feel local tension and rebound.',
     fabricTab: 'Fabric', lightsTab: 'Lighting', panelOpen: 'Open controls', panelClose: 'Close controls', musicPlay: 'Play background music', musicPause: 'Pause background music',
     idleLoading: 'Loading Idle animation', idleUnavailable: 'No Idle animation', idlePause: 'Pause Idle animation', idlePlay: 'Play Idle animation', stockingsHide: 'Hide stockings · bare-leg view', stockingsShow: 'Show stockings',
     opacity: 'Fabric density', tightness: 'Fit', tightnessHint: '0% loose → 100% fitted; increase to reduce folds at knees and ankles', elasticity: 'Stretch', elasticityHint: 'Low: firm, shorter pull; high: softer, stretches farther', stiffness: 'Recovery speed', damping: 'Recovery damping', dampingHint: 'Low: more bounce; high: steadier return', influence: 'Stretch influence', influenceHint: 'A smaller area hugs the leg; a larger area moves more fabric', reflection: 'Reflection strength', reflectionTitle: '100% is the original look; 0% disables fabric highlights', sparkle: 'Fiber sparkle', sparkleTitle: 'Lower values even out reflections; 100% keeps the original fiber sparkle',
@@ -23,7 +25,8 @@ const messages = {
   },
   ja: {
     tearAppearanceTitle: '破れの縁と伝線', resetTearAppearance: 'この設定をリセット', tearAppearanceValues: '設定（選択してコピー）', rimDarkness: '縁の濃さ', rimWidth: '縁の幅', rimRelief: '縁の凹凸', warpStrength: '縦糸の強さ', weftStrength: '横糸の強さ', warpDensity: '縦糸の密度', weftDensity: '横糸の密度', yarnThickness: '糸の太さ', yarnBend: '糸の湾曲', yarnGloss: '糸の光沢',
-    pageTitle: 'ファブリックスタディ · MATTER', stageLabel: 'ドラッグ操作できる3D伸縮ファブリック', brand: 'MATTER<span> / </span>ファブリックスタディ', live: 'THREE.JS リアルタイム描画', heroTitle: 'ナイロン、<br>動きに沿って。', heroDescription: '脚にフィットし、動きに追従。<br>ドラッグして張りと戻りを体感できます。',
+    languageLabel: '表示言語', languageAuto: '自動', footerHelp: '左ドラッグで伸縮 · 右ドラッグで回転 · ボタンで視点を切り替え',
+    stageLabel: 'ドラッグ操作できる3D伸縮ファブリック', live: 'THREE.JS リアルタイム描画', heroTitle: 'ナイロン、<br>動きに沿って。', heroDescription: '脚にフィットし、動きに追従。<br>ドラッグして張りと戻りを体感できます。',
     fabricTab: 'ファブリック', lightsTab: '照明', panelOpen: '操作パネルを開く', panelClose: '操作パネルを閉じる', musicPlay: 'BGMを再生', musicPause: 'BGMを一時停止',
     idleLoading: 'Idle アニメーションを読み込み中', idleUnavailable: 'Idle アニメーションなし', idlePause: 'Idle アニメーションを一時停止', idlePlay: 'Idle アニメーションを再生', stockingsHide: 'ストッキングを隠す · 素足表示', stockingsShow: 'ストッキングを表示',
     opacity: '生地の密度', tightness: 'フィット感', tightnessHint: '0% ゆったり → 100% フィット。値を上げると膝や足首のたるみが減ります', elasticity: '伸縮性', elasticityHint: '低：硬く伸びにくい／高：柔らかく遠くまで伸びる', stiffness: '戻りの速さ', damping: '戻りの減衰', dampingHint: '低：弾みが多い／高：安定して戻る', influence: '伸縮の影響範囲', influenceHint: '範囲が小さいと脚に密着し、大きいと広い生地が動きます', reflection: '反射の強さ', reflectionTitle: '100% は元の見た目、0% で生地のハイライトを無効化', sparkle: '繊維のきらめき', sparkleTitle: '値を下げると反射が均一になります。100% は元のきらめきです',
@@ -44,23 +47,61 @@ export function selectLanguage(preferences = globalThis.navigator?.languages ?? 
   return 'en';
 }
 
-export const language = selectLanguage();
+const languageStorageKey = 'pantyhose-language';
+let preference = 'auto';
+try {
+  const saved = globalThis.localStorage?.getItem(languageStorageKey);
+  if (Object.hasOwn(messages, saved)) preference = saved;
+} catch {
+  // The selector still works for this page if browser storage is unavailable.
+}
+
+export let language = preference === 'auto' ? selectLanguage() : preference;
 export const t = key => messages[language][key] ?? messages.en[key] ?? key;
 
-export function localizeStaticUi() {
-  document.documentElement.lang = language === 'zh' ? 'zh-CN' : language;
-  const title = document.querySelector('title');
-  if (title) title.textContent = t('pageTitle');
-  for (const element of document.querySelectorAll('[data-i18n]')) {
-    const value = t(element.dataset.i18n);
-    if (element.dataset.i18nHtml !== undefined) {
-      element.innerHTML = value;
-      continue;
-    }
-    const textNode = [...element.childNodes].find(node => node.nodeType === Node.TEXT_NODE && node.textContent.trim());
-    if (textNode) textNode.textContent = value;
-    else element.textContent = value;
+function localizeText(element) {
+  const value = t(element.dataset.i18n);
+  if (element.hasAttribute('data-i18n-html')) {
+    element.innerHTML = value;
+    return;
   }
+  const textNode = [...element.childNodes].find(node => node.nodeType === Node.TEXT_NODE && node.textContent.trim());
+  if (textNode) textNode.textContent = value;
+  else element.prepend(value);
+}
+
+export function setLocalizedText(element, key) {
+  element.dataset.i18n = key;
+  localizeText(element);
+}
+
+function localizeUi() {
+  document.documentElement.lang = language === 'zh' ? 'zh-CN' : language;
+  for (const element of document.querySelectorAll('[data-i18n]')) localizeText(element);
   for (const element of document.querySelectorAll('[data-i18n-aria]')) element.setAttribute('aria-label', t(element.dataset.i18nAria));
   for (const element of document.querySelectorAll('[data-i18n-title]')) element.title = t(element.dataset.i18nTitle);
+}
+
+export function initializeLocalization() {
+  const selector = document.getElementById('languageSelect');
+  selector.value = preference;
+  localizeUi();
+
+  selector.addEventListener('change', () => {
+    preference = selector.value;
+    language = preference === 'auto' ? selectLanguage() : preference;
+    try {
+      if (preference === 'auto') localStorage.removeItem(languageStorageKey);
+      else localStorage.setItem(languageStorageKey, preference);
+    } catch {
+      // Persistence is optional.
+    }
+    localizeUi();
+  });
+
+  addEventListener('languagechange', () => {
+    if (preference !== 'auto') return;
+    language = selectLanguage();
+    localizeUi();
+  });
 }
