@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {bindTearAppearance} from './tear-appearance.js?v=20261119-language';
-import { initializeLocalization, setLocalizedText, t } from './localization.js?v=20261119-language';
+import { initializeLocalization, setLocalizedText, t } from './localization.js?v=20261119-brand-language';
 import { setupLighting } from './lighting-controls.js';
 import { setupGroundShadows } from './ground-shadow.js';
 import { createNylonMaterial, createStudioEnvironment } from './fabric-material.js?v=20261115-defaults2';

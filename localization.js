@@ -1,7 +1,7 @@
 const messages = {
   zh: {
     tearAppearanceTitle: '洞边与抽丝调节', resetTearAppearance: '恢复这组默认值', tearAppearanceValues: '参数记录（选中复制发给我）', rimDarkness: '洞边深浅', rimWidth: '洞边宽度', rimRelief: '洞边凹凸', warpStrength: '纵丝强度', weftStrength: '横丝强度', warpDensity: '纵丝密度', weftDensity: '横丝密度', yarnThickness: '纱线粗细', yarnBend: '纱线弯曲', yarnGloss: '纱线反光',
-    languageLabel: '界面语言', languageAuto: '自动', footerHelp: '左键拖拽丝袜 · 按住右键旋转 · 使用按钮切换视角',
+    brand: '丝袜模拟器', languageLabel: '界面语言', languageAuto: '自动', footerHelp: '左键拖拽丝袜 · 按住右键旋转 · 使用按钮切换视角',
     stageLabel: '可拖拽的三维弹性织物', live: 'THREE.JS 实时渲染', heroTitle: '丝袜，<br>随形而动。', heroDescription: '贴合腿脚，跟随动作。<br>拖拽感受局部张力与回弹。',
     fabricTab: '织物', lightsTab: '灯光', panelOpen: '展开控制面板', panelClose: '收起控制面板', musicPlay: '播放背景音乐', musicPause: '暂停背景音乐',
     idleLoading: 'Idle 动画加载中', idleUnavailable: '无 Idle 动画', idlePause: '暂停 Idle 动画', idlePlay: '播放 Idle 动画', stockingsHide: '隐藏丝袜 · 裸腿对照', stockingsShow: '显示丝袜',
@@ -13,7 +13,7 @@ const messages = {
   },
   en: {
     tearAppearanceTitle: 'Tear edges and yarns', resetTearAppearance: 'Reset these values', tearAppearanceValues: 'Settings (select and copy to share)', rimDarkness: 'Edge darkness', rimWidth: 'Edge width', rimRelief: 'Edge relief', warpStrength: 'Vertical yarn strength', weftStrength: 'Cross yarn strength', warpDensity: 'Vertical yarn density', weftDensity: 'Cross yarn density', yarnThickness: 'Yarn thickness', yarnBend: 'Yarn curvature', yarnGloss: 'Yarn sheen',
-    languageLabel: 'Interface language', languageAuto: 'Auto', footerHelp: 'Left-drag to stretch · right-drag to rotate · use buttons to change view',
+    brand: 'Pantyhose Simulator', languageLabel: 'Interface language', languageAuto: 'Auto', footerHelp: 'Left-drag to stretch · right-drag to rotate · use buttons to change view',
     stageLabel: 'Interactive 3D elastic fabric', live: 'THREE.JS REALTIME', heroTitle: 'Nylon,<br>in motion.', heroDescription: 'Fitted to the legs and moving with them.<br>Drag to feel local tension and rebound.',
     fabricTab: 'Fabric', lightsTab: 'Lighting', panelOpen: 'Open controls', panelClose: 'Close controls', musicPlay: 'Play background music', musicPause: 'Pause background music',
     idleLoading: 'Loading Idle animation', idleUnavailable: 'No Idle animation', idlePause: 'Pause Idle animation', idlePlay: 'Play Idle animation', stockingsHide: 'Hide stockings · bare-leg view', stockingsShow: 'Show stockings',
@@ -25,7 +25,7 @@ const messages = {
   },
   ja: {
     tearAppearanceTitle: '破れの縁と伝線', resetTearAppearance: 'この設定をリセット', tearAppearanceValues: '設定（選択してコピー）', rimDarkness: '縁の濃さ', rimWidth: '縁の幅', rimRelief: '縁の凹凸', warpStrength: '縦糸の強さ', weftStrength: '横糸の強さ', warpDensity: '縦糸の密度', weftDensity: '横糸の密度', yarnThickness: '糸の太さ', yarnBend: '糸の湾曲', yarnGloss: '糸の光沢',
-    languageLabel: '表示言語', languageAuto: '自動', footerHelp: '左ドラッグで伸縮 · 右ドラッグで回転 · ボタンで視点を切り替え',
+    brand: 'ストッキングシミュレーター', languageLabel: '表示言語', languageAuto: '自動', footerHelp: '左ドラッグで伸縮 · 右ドラッグで回転 · ボタンで視点を切り替え',
     stageLabel: 'ドラッグ操作できる3D伸縮ファブリック', live: 'THREE.JS リアルタイム描画', heroTitle: 'ナイロン、<br>動きに沿って。', heroDescription: '脚にフィットし、動きに追従。<br>ドラッグして張りと戻りを体感できます。',
     fabricTab: 'ファブリック', lightsTab: '照明', panelOpen: '操作パネルを開く', panelClose: '操作パネルを閉じる', musicPlay: 'BGMを再生', musicPause: 'BGMを一時停止',
     idleLoading: 'Idle アニメーションを読み込み中', idleUnavailable: 'Idle アニメーションなし', idlePause: 'Idle アニメーションを一時停止', idlePlay: 'Idle アニメーションを再生', stockingsHide: 'ストッキングを隠す · 素足表示', stockingsShow: 'ストッキングを表示',
